@@ -8,7 +8,7 @@
     "build": "vite build --out-dir=../web/ --emptyOutDir",
     "preview": "vite preview --host",
     "test:unit": "vitest run --environment jsdom --root src/",
-    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore",
+    "lint": "eslint . --fix",
     "build-dev": "vite build --mode=development --out-dir=../web/ --emptyOutDir"
   },
   "dependencies": {
