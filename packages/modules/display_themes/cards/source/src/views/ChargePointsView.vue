@@ -61,6 +61,19 @@ library.add(
 
 export default {
   name: "ChargePointsView",
+  components: {
+    DashBoardCard,
+    SparkLine,
+    ChargePointPlugBadge,
+    ChargePointLockButton,
+    ChargePointCodeButton,
+    ExtendedNumberInput,
+    ManualSocInput,
+    FontAwesomeIcon,
+  },
+  props: {
+    changesLocked: { required: false, type: Boolean, default: false },
+  },
   data() {
     return {
       mqttStore: useMqttStore(),
@@ -72,30 +85,6 @@ export default {
       modalActiveTab: "tab-general",
       modalManualSocInputVisible: false,
     };
-  },
-  props: {
-    changesLocked: { required: false, type: Boolean, default: false },
-  },
-  components: {
-    DashBoardCard,
-    SparkLine,
-    ChargePointPlugBadge,
-    ChargePointLockButton,
-    ChargePointCodeButton,
-    ExtendedNumberInput,
-    ManualSocInput,
-    FontAwesomeIcon,
-  },
-  watch: {
-    changesLocked(newValue, oldValue) {
-      // hide all modals if lock is kicking in
-      if (oldValue !== true && newValue === true) {
-        this.modalChargeModeSettingVisible = false;
-        this.modalVehicleSelectVisible = false;
-        this.modalChargePointSettingsVisible = false;
-        this.modalManualSocInputVisible = false;
-      }
-    },
   },
   computed: {
     vehicleList() {
@@ -109,6 +98,17 @@ export default {
         vehicleList.push({ id: id, name: topicList[topic] });
       });
       return vehicleList;
+    },
+  },
+  watch: {
+    changesLocked(newValue, oldValue) {
+      // hide all modals if lock is kicking in
+      if (oldValue !== true && newValue === true) {
+        this.modalChargeModeSettingVisible = false;
+        this.modalVehicleSelectVisible = false;
+        this.modalChargePointSettingsVisible = false;
+        this.modalManualSocInputVisible = false;
+      }
     },
   },
   methods: {
@@ -355,7 +355,7 @@ export default {
         {{ mqttStore.getChargePointName(id) }}
       </template>
       <template #headerRight>
-        <charge-point-plug-badge :chargePointId="[id]" />
+        <charge-point-plug-badge :charge-point-id="[id]" />
       </template>
       <i-container>
         <i-row>
@@ -365,11 +365,11 @@ export default {
               <i-column class="_padding-left:0 _padding-right:0">
                 <charge-point-code-button
                   v-if="mqttStore.getRfidEnabled"
-                  :chargePointId="id"
+                  :charge-point-id="id"
                 />
                 <charge-point-lock-button
-                  :chargePointId="id"
-                  :changesLocked="changesLocked"
+                  :charge-point-id="id"
+                  :changes-locked="changesLocked"
                 />
               </i-column>
               <i-column class="_text-align:right _padding-left:0">
@@ -403,7 +403,10 @@ export default {
                   "
                   @click="handleVehicleClick(id)"
                 >
-                  <font-awesome-icon fixed-width :icon="['fas', 'fa-car']" />
+                  <font-awesome-icon
+                    fixed-width
+                    :icon="['fas', 'fa-car']"
+                  />
                   {{ mqttStore.getChargePointConnectedVehicleName(id) }}
                 </i-badge>
               </i-column>
@@ -412,9 +415,9 @@ export default {
                   mqttStore.getVehicleSocConfigured(
                     mqttStore.getChargePointConnectedVehicleId(id),
                   ) ||
-                  mqttStore.getVehicleFaultState(
-                    mqttStore.getChargePointConnectedVehicleId(id),
-                  ) != 0
+                    mqttStore.getVehicleFaultState(
+                      mqttStore.getChargePointConnectedVehicleId(id),
+                    ) != 0
                 "
                 class="_flex-grow:0 _padding-right:0 _padding-left:1"
               >
@@ -455,8 +458,8 @@ export default {
                         mqttStore.getChargePointConnectedVehicleId(id),
                       ) > 0
                         ? mqttStore.getVehicleFaultState(
-                            mqttStore.getChargePointConnectedVehicleId(id),
-                          ) > 1
+                          mqttStore.getChargePointConnectedVehicleId(id),
+                        ) > 1
                           ? ['fas', 'times-circle']
                           : ['fas', 'exclamation-triangle']
                         : []
@@ -466,8 +469,8 @@ export default {
                         mqttStore.getChargePointConnectedVehicleId(id),
                       ) > 0
                         ? mqttStore.getVehicleFaultState(
-                            mqttStore.getChargePointConnectedVehicleId(id),
-                          ) > 1
+                          mqttStore.getChargePointConnectedVehicleId(id),
+                        ) > 1
                           ? '_color:danger'
                           : '_color:warning'
                         : ''
@@ -539,10 +542,19 @@ export default {
               </i-column>
             </i-row>
             <!-- settings button -->
-            <i-row v-if="!changesLocked" class="_padding-top:1">
+            <i-row
+              v-if="!changesLocked"
+              class="_padding-top:1"
+            >
               <i-column class="_padding-left:0 _padding-right:0">
-                <i-button block @click="toggleChargePointSettings(id)">
-                  <font-awesome-icon fixed-width :icon="['fas', 'fa-wrench']" />
+                <i-button
+                  block
+                  @click="toggleChargePointSettings(id)"
+                >
+                  <font-awesome-icon
+                    fixed-width
+                    :icon="['fas', 'fa-wrench']"
+                  />
                 </i-button>
               </i-column>
             </i-row>
@@ -553,7 +565,10 @@ export default {
   </div>
   <!-- modals -->
   <!-- charge mode only -->
-  <i-modal v-model="modalChargeModeSettingVisible" size="lg">
+  <i-modal
+    v-model="modalChargeModeSettingVisible"
+    size="lg"
+  >
     <template #header>
       Lademodus für "{{
         mqttStore.getChargePointConnectedVehicleName(modalChargePointId)
@@ -572,7 +587,7 @@ export default {
               mqttStore.getChargePointConnectedVehicleChargeMode(
                 modalChargePointId,
               ) != undefined &&
-              mode.id ==
+                mode.id ==
                 mqttStore.getChargePointConnectedVehicleChargeMode(
                   modalChargePointId,
                 ).mode
@@ -626,8 +641,8 @@ export default {
   <!-- end charge mode only-->
   <!-- vehicle only -->
   <i-modal
-    class="modal-vehicle-select"
     v-model="modalVehicleSelectVisible"
+    class="modal-vehicle-select"
     size="lg"
   >
     <template #header>
@@ -636,17 +651,20 @@ export default {
     </template>
     <i-form>
       <i-form-group>
-        <i-button-group vertical block>
+        <i-button-group
+          vertical
+          block
+        >
           <i-button
             v-for="vehicle in vehicleList"
             :key="vehicle.id"
             :active="
               mqttStore.getChargePointConnectedVehicleId(modalChargePointId) ==
-              vehicle.id
+                vehicle.id
             "
             :color="
               mqttStore.getChargePointConnectedVehicleId(modalChargePointId) ==
-              vehicle.id
+                vehicle.id
                 ? 'primary'
                 : ''
             "
@@ -660,18 +678,32 @@ export default {
   </i-modal>
   <!-- end vehicle only-->
   <!-- charge point settings -->
-  <i-modal v-model="modalChargePointSettingsVisible" size="lg">
+  <i-modal
+    v-model="modalChargePointSettingsVisible"
+    size="lg"
+  >
     <template #header>
       Einstellungen für Fahrzeug "{{
         mqttStore.getChargePointConnectedVehicleName(modalChargePointId)
       }}"
     </template>
-    <i-tabs v-model="modalActiveTab" stretch>
+    <i-tabs
+      v-model="modalActiveTab"
+      stretch
+    >
       <template #header>
-        <i-tab-title for="tab-instant-charging"> Sofort </i-tab-title>
-        <i-tab-title for="tab-pv-charging"> PV </i-tab-title>
-        <i-tab-title for="tab-scheduled-charging"> Zielladen </i-tab-title>
-        <i-tab-title for="tab-time-charging"> Zeitladen </i-tab-title>
+        <i-tab-title for="tab-instant-charging">
+          Sofort
+        </i-tab-title>
+        <i-tab-title for="tab-pv-charging">
+          PV
+        </i-tab-title>
+        <i-tab-title for="tab-scheduled-charging">
+          Zielladen
+        </i-tab-title>
+        <i-tab-title for="tab-time-charging">
+          Zeitladen
+        </i-tab-title>
       </template>
 
       <i-tab name="tab-instant-charging">
@@ -1002,7 +1034,10 @@ export default {
           "
         >
           <template #icon>
-            <font-awesome-icon fixed-width :icon="['fas', 'fa-info-circle']" />
+            <font-awesome-icon
+              fixed-width
+              :icon="['fas', 'fa-info-circle']"
+            />
           </template>
           Es wurden noch keine Zeitpläne für das Zielladen eingerichtet.
         </i-alert>
@@ -1054,7 +1089,10 @@ export default {
                       mqttStore.formatWeeklyScheduleDays(plan.frequency.weekly)
                     }}
                   </span>
-                  <font-awesome-icon fixed-width :icon="['fas', 'clock']" />
+                  <font-awesome-icon
+                    fixed-width
+                    :icon="['fas', 'clock']"
+                  />
                   {{ plan.time }}
                   <span v-if="plan.limit.selected == 'soc'">
                     <font-awesome-icon
@@ -1064,7 +1102,10 @@ export default {
                     {{ plan.limit.soc_scheduled }}&nbsp;%
                   </span>
                   <span v-if="plan.limit.selected == 'amount'">
-                    <font-awesome-icon fixed-width :icon="['fas', 'bolt']" />
+                    <font-awesome-icon
+                      fixed-width
+                      :icon="['fas', 'bolt']"
+                    />
                     {{ plan.limit.amount / 1000 }}&nbsp;kWh
                   </span>
                 </i-button>
@@ -1190,7 +1231,10 @@ export default {
                           )
                         }}
                       </span>
-                      <font-awesome-icon fixed-width :icon="['fas', 'clock']" />
+                      <font-awesome-icon
+                        fixed-width
+                        :icon="['fas', 'clock']"
+                      />
                       {{ plan.time.join("-") }}
                       <span v-if="plan.limit.selected == 'soc'">
                         <font-awesome-icon
@@ -1219,8 +1263,8 @@ export default {
   <!-- end charge point settings modal-->
   <!-- manual soc input -->
   <manual-soc-input
-    :vehicleId="modalVehicleId"
     v-model="modalManualSocInputVisible"
+    :vehicle-id="modalVehicleId"
   />
   <!-- end manual soc input -->
 </template>
