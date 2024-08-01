@@ -50,6 +50,7 @@ class Device(AbstractDevice):
                 self.device_config.id,
                 self.device_config.configuration.ip_address,
                 self.device_config.configuration.variant,
+                self.device_config.configuration.api_v2_token,
                 component_config))
         else:
             raise Exception(
