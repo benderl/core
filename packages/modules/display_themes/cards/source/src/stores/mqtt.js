@@ -534,7 +534,7 @@ export const useMqttStore = defineStore("mqtt", {
         );
       };
     },
-    getChargepointTagState(state) {
+    getChargePointTagState(state) {
       return (chargePointId) => {
         if (
           ![undefined, null, ""].includes(

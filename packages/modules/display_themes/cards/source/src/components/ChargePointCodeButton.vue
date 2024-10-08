@@ -28,7 +28,7 @@ export default {
   },
   computed: {
     tagState() {
-      return this.mqttStore.getChargepointTagState(this.chargePointId);
+      return this.mqttStore.getChargePointTagState(this.chargePointId);
     },
     tagButtonColor() {
       switch (this.tagState) {
