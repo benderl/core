@@ -8,6 +8,7 @@ RAMDISKDIR="$OPENWBBASEDIR/ramdisk"
 TEMPDIR="$RAMDISKDIR/temp"
 LOGDIR="$OPENWBBASEDIR/data/log"
 LOGFILE="$LOGDIR/backup.log"
+KEYFILE="$BACKUPDIR/backup.key"
 
 useExtendedFilename=$1
 if ((useExtendedFilename == 1)); then
@@ -17,6 +18,7 @@ if ((useExtendedFilename == 1)); then
 else
 	FILENAME="backup.tar"
 fi
+FILENAMESUFFIX=".gz"
 
 {
 	echo "starting backup script"
@@ -33,7 +35,7 @@ fi
 
 	echo "deleting old backup files if present in '$BACKUPDIR'"
 	# remove old backup files
-	rm -v "$BACKUPDIR/"*
+	rm -v "$BACKUPDIR/"*.tar.gz*
 	BACKUPFILE="$BACKUPDIR/$FILENAME"
 
 	# tell mosquitto to store all retained topics in db now
@@ -113,12 +115,26 @@ fi
 		"backup.log"
 	echo "zipping archive"
 	gzip --verbose "$BACKUPFILE"
+
+	# encrypt backup file with gpg
+	if [[ -f "$KEYFILE" ]]; then
+		echo "encrypting backup file"
+		gpg --batch --yes --passphrase-file "$KEYFILE" \
+			--symmetric --cipher-algo AES256 "$BACKUPFILE.gz"
+		FILENAMESUFFIX=".gz.gpg"
+		echo "removing unencrypted backup file"
+		rm -v "$BACKUPFILE.gz"
+	else
+		echo "ERROR: $BACKUPFILE.gz not found!"
+	fi
+
+	# fix permissions of backup file
 	echo "setting permissions of new backup file"
-	sudo chown openwb:www-data "$BACKUPFILE.gz"
-	sudo chmod 664 "$BACKUPFILE.gz"
+	sudo chown openwb:www-data "$BACKUPFILE$FILENAMESUFFIX"
+	sudo chmod 664 "$BACKUPFILE$FILENAMESUFFIX"
 
 	echo "backup finished"
 } >"$LOGFILE" 2>&1
 
 # return our filename for further processing
-echo "$FILENAME.gz"
+echo "$FILENAME$FILENAMESUFFIX"
