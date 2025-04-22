@@ -8,7 +8,8 @@ RAMDISKDIR="$OPENWBBASEDIR/ramdisk"
 TEMPDIR="$RAMDISKDIR/temp"
 LOGDIR="$OPENWBBASEDIR/data/log"
 LOGFILE="$LOGDIR/backup.log"
-KEYFILE="$BACKUPDIR/backup.key"
+HOMEDIR="/home/openwb"
+KEYFILE="backup.key"
 
 useExtendedFilename=$1
 if ((useExtendedFilename == 1)); then
@@ -57,7 +58,7 @@ FILENAMESUFFIX=".gz"
 	echo "adding configuration file"
 	sudo tar --verbose --append \
 		--file="$BACKUPFILE" \
-		--directory="/home/openwb/" \
+		--directory="$HOMEDIR/" \
 		"configuration.json"
 	echo "adding mosquitto files"
 	sudo tar --verbose --append \
@@ -81,6 +82,13 @@ FILENAMESUFFIX=".gz"
 		--file="$BACKUPFILE" \
 		--directory="$RAMDISKDIR/" \
 		"GIT_BRANCH" "GIT_HASH"
+	if [[ -f "$HOMEDIR/$KEYFILE" ]]; then
+		echo "adding key file"
+		tar --verbose --append \
+			--file="$BACKUPFILE" \
+			--directory="$HOMEDIR/" \
+			"$KEYFILE"
+	fi
 
 	echo "calculating checksums"
 	IFS=$'\n'
@@ -117,9 +125,9 @@ FILENAMESUFFIX=".gz"
 	gzip --verbose "$BACKUPFILE"
 
 	# encrypt backup file with gpg
-	if [[ -f "$KEYFILE" ]]; then
+	if [[ -f "$HOMEDIR/$KEYFILE" ]]; then
 		echo "encrypting backup file"
-		gpg --batch --yes --passphrase-file "$KEYFILE" \
+		gpg --batch --yes --passphrase-file "$HOMEDIR/$KEYFILE" \
 			--symmetric --cipher-algo AES256 "$BACKUPFILE.gz"
 		FILENAMESUFFIX=".gz.gpg"
 		echo "removing unencrypted backup file"
