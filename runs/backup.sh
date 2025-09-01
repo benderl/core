@@ -82,13 +82,6 @@ FILENAMESUFFIX=".gz"
 		--file="$BACKUPFILE" \
 		--directory="$RAMDISKDIR/" \
 		"GIT_BRANCH" "GIT_HASH"
-	if [[ -f "$HOMEDIR/$KEYFILE" ]]; then
-		echo "adding key file"
-		tar --verbose --append \
-			--file="$BACKUPFILE" \
-			--directory="$HOMEDIR/" \
-			"$KEYFILE"
-	fi
 
 	echo "calculating checksums"
 	IFS=$'\n'
