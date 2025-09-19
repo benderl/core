@@ -26,7 +26,7 @@ case "$1" in
 		sudo sed -i "s/^lcd_rotate=[0-3]$/lcd_rotate=0/" "/boot/config.txt"
 		if [ -n "$cloud_bridge" ]; then
 			echo "restore cloud bridge configuration: $cloud_bridge"
-			mosquitto_pub -t 'openWB/command/max_id/mqtt_bridge' -r -m 1 -p 1886
+			mosquitto_pub -t 'openWB/command/max_id/mqtt_bridge' -r -m 0 -p 1886
 			mosquitto_pub -t 'openWB/system/mqtt/valid_partner_ids' -r -m "$valid_partner_ids" -p 1886
 			mosquitto_pub -t 'openWB/system/mqtt/bridge/0' -r -m "$cloud_bridge" -p 1886
 		fi
