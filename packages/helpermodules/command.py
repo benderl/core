@@ -66,16 +66,6 @@ class Command:
          ("io_action", "openWB/io/action/[0-9]+/config$", -1),
          ("io_device", "openWB/system/io/[0-9]+/config$", -1)],
     }
-    ACCESS_CONTROLLED_COMMANDS = [
-        "addChargeTemplateSchedulePlan",
-        "removeChargeTemplateSchedulePlan",
-        "addChargeTemplateTimeChargingPlan",
-        "removeChargeTemplateTimeChargingPlan",
-        "getChargeLog",
-        "getDailyLog",
-        "getMonthlyLog",
-        "getYearlyLog",
-    ]
 
     def __init__(self, event_command_completed: Event):
         try:
@@ -161,15 +151,6 @@ class Command:
                     with CompleteCommandContext(self.event_command_completed):
                         connection_id = msg.topic.split("/")[2]
                         log.debug(f'Befehl: {payload}, Connection-ID: {connection_id}')
-                        if SubData.system_data["system_data"].data["security"]["user_management_active"]:
-                            if payload["command"] in self.ACCESS_CONTROLLED_COMMANDS:
-                                payload = decode_payload(msg.payload)
-                                if payload.split("/")[-1] != payload["command"]:
-                                    pub_user_message(
-                                        payload, connection_id,
-                                        f'Keine Berechtigung für den Befehl: \'{payload["command"]}\'',
-                                        MessageType.ERROR)
-                                    return
                         # Methoden-Name = Befehl
                         try:
                             func = getattr(self, payload["command"])
