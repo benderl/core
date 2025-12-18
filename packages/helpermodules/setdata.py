@@ -1110,7 +1110,7 @@ class SetData:
             elif "todo" in msg.topic:
                 if subdata.SubData.system_data["system_data"].data["security"]["user_management_active"]:
                     payload = decode_payload(msg.payload)
-                    if payload.split("/")[-1] != payload["command"]:
+                    if msg.topic.split("/")[-1] != payload["command"]:
                         log.warning(f'Keine Berechtigung für den Befehl: {payload["command"]}')
                         return
                 self._validate_value(msg, "json")
