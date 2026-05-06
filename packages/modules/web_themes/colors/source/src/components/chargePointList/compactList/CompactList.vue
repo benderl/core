@@ -14,7 +14,7 @@
 			:key="index"
 			class="subgrid pb-2"
 		>
-			<CpsListItem2 :chargepoint="cp" />
+			<CompactListItem :chargepoint="cp" />
 		</div>
 	</WbWidgetFlex>
 </template>
@@ -23,7 +23,7 @@
 import { computed } from 'vue'
 import { chargePoints } from '../model'
 import WbWidgetFlex from '@/components/shared/WbWidgetFlex.vue'
-import CpsListItem2 from './CpsListItem2.vue'
+import CompactListItem from './CompactListItem.vue'
 import WbBadge from '@/components/shared/WbBadge.vue'
 import { etData } from '@/components/priceChart/model'
 const chargepointsToDisplay = computed(() => {

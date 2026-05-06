@@ -2,6 +2,10 @@
 	<WbSubwidget :titlecolor="chargepoint.color" :fullwidth="true" :small="true">
 		<template #title>
 			<div class="d-flex align-items-center">
+				<span
+					v-if="chargepoint.hasPriority"
+					class="me-2 fa-solid fa-xs fa-star"
+				/>
 				<span class="cpname">{{ chargepoint.name }} </span>
 				<span class="badge rounded-pill statusbadge mx-2" :style="statusColor">
 					<i :class="statusIcon" class="me-1" />
@@ -77,6 +81,7 @@
 							</span>
 						</span>
 					</span>
+					<span>{{ chargeLimitsString }}</span>
 				</div>
 			</InfoItem>
 			<InfoItem heading="Geladen:" :small="true" class="grid-right grid-col-4">
@@ -128,7 +133,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { chargePoints, type ChargePoint } from '../model'
+import { chargePoints, type ChargeLimit, type ChargePoint } from '../model'
 import { chargemodes, globalConfig } from '@/assets/js/themeConfig'
 import { formatWatt, formatWattH } from '@/assets/js/helpers'
 import ChargeConfigPanel from '../cpConfig/ChargeConfigPanel.vue'
@@ -233,6 +238,36 @@ const statusString = computed(() => {
 		return 'Bereit'
 	} else {
 		return 'Frei'
+	}
+})
+
+function limitString(limit: ChargeLimit) {
+	switch (limit.selected) {
+		case 'none':
+			return ''
+		case 'soc':
+			return `Limit: ${limit.soc} %`
+		case 'amount':
+			return 'Limit: ' + formatWattH(limit.amount)
+	}
+}
+
+const chargeLimitsString = computed(() => {
+	let chargeTemplate = props.chargepoint.chargeTemplate
+	if (chargeTemplate != undefined) {
+		const chargeMode = chargeTemplate.chargemode.selected
+		switch (chargeMode) {
+			case 'pv_charging':
+				return limitString(chargeTemplate.chargemode.pv_charging.limit)
+			case 'eco_charging':
+				return limitString(chargeTemplate.chargemode.eco_charging.limit)
+			case 'instant_charging':
+				return limitString(chargeTemplate.chargemode.instant_charging.limit)
+			default:
+				return ''
+		}
+	} else {
+		return ''
 	}
 })
 </script>
